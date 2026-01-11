@@ -3,38 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://telegram.org/js/telegram-web-app.js?v=1.3"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=1.4"></script>
+    <script src="https://sad.adsgram.ai/js/adsgram-adbox.js"></script>
     <style>
         :root { --accent: #f1c40f; --neon: #00f2ff; --purple: #7000ff; }
         body { background: #050505; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
         .bg { position: fixed; top: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e0044 0%, transparent 50%); z-index: -1; }
         #bal { font-size: 70px; font-weight: 900; color: var(--accent); margin: 30px 0; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        
-        #coin-btn {
-            width: 250px; height: 250px; border-radius: 50%;
-            background: linear-gradient(145deg, #1a1a1a, #000);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 110px; border: 4px solid var(--purple);
-            box-shadow: 0 0 40px #000, inset 0 0 20px rgba(112,0,255,0.3);
-            cursor: pointer; transition: transform 0.05s;
-            -webkit-user-select: none; user-select: none;
-        }
+        #coin-btn { width: 250px; height: 250px; border-radius: 50%; background: linear-gradient(145deg, #1a1a1a, #000); display: inline-flex; align-items: center; justify-content: center; font-size: 110px; border: 4px solid var(--purple); box-shadow: 0 0 40px #000, inset 0 0 20px rgba(112,0,255,0.3); cursor: pointer; transition: transform 0.05s; -webkit-user-select: none; }
         #coin-btn:active { transform: scale(0.92); }
-
         .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 85%; margin: 15px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
         .bar { background: #111; height: 14px; border-radius: 7px; margin-top: 10px; overflow: hidden; border: 1px solid #333; }
         #fill { background: linear-gradient(90deg, var(--neon), var(--purple)); height: 100%; width: 100%; transition: 0.2s; }
-
         .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; border-top: 1px solid #333; padding-bottom: 20px; }
-        .nav button { flex: 1; padding: 15px; background: none; border: none; color: #888; font-weight: bold; font-size: 12px; }
+        .nav button { flex: 1; padding: 15px; background: none; border: none; color: #888; font-weight: bold; font-size: 11px; }
         .nav button.active { color: var(--neon); border-top: 2px solid var(--neon); }
-        
         .page { display: none; padding-top: 10px; height: 75vh; overflow-y: auto; }
         .page.active { display: block; }
         .item { background: rgba(255,255,255,0.05); margin: 10px 20px; padding: 15px; border-radius: 15px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .btn { background: var(--neon); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .btn:disabled { background: #444; color: #777; }
-        #ac-status { color: var(--neon); font-weight: bold; display: none; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -44,7 +32,7 @@
     <div id="game-p" class="page active">
         <div id="bal">0</div>
         <div id="coin-btn">🐹</div>
-        <div id="ac-status">🚀 АВТОКЛИК: <span id="ac-timer">60</span>s</div>
+        <div id="ac-status" style="display:none; color:var(--neon); margin-top:10px;">🚀 АВТОКЛИК: <span id="ac-timer">60</span>s</div>
         <div class="panel">
             <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;"><span>⚡ ЭНЕРГИЯ</span><span id="en-txt">2000 / 2000</span></div>
             <div class="bar"><div id="fill"></div></div>
@@ -53,38 +41,31 @@
 
     <div id="shop-p" class="page">
         <h2 style="color:var(--neon)">МАГАЗИН</h2>
-        <div class="item">
-            <div style="text-align: left;"><b>Мультитап</b><br><small id="mt-cost">Цена: 2000</small></div>
-            <button class="btn" id="mt-btn" onclick="buyMT()">КУПИТЬ</button>
-        </div>
-        <div class="item">
-            <div style="text-align: left;"><b>Запас энергии</b><br><small id="en-cost">Цена: 2000</small></div>
-            <button class="btn" id="en-btn" onclick="buyMaxEn()">КУПИТЬ</button>
-        </div>
-        <div class="item"><div style="text-align: left;"><b>Автокликер (1м)</b><br><small>Цена: 5000</small></div>
-            <button class="btn" id="ac-btn" onclick="buyAC()">КУПИТЬ</button>
-        </div>
+        <div class="item"><div><b>Мультитап</b><br><small id="mt-cost">2000</small></div><button class="btn" id="mt-btn" onclick="buyMT()">КУПИТЬ</button></div>
+        <div class="item"><div><b>Макс. Энергия</b><br><small id="en-cost">2000</small></div><button class="btn" id="en-btn" onclick="buyMaxEn()">КУПИТЬ</button></div>
+        <div class="item"><div><b>Автокликер</b><br><small>5000</small></div><button class="btn" id="ac-btn" onclick="buyAC()">КУПИТЬ</button></div>
     </div>
 
-    <div id="tasks-p" class="page">
-        <h2 style="color:var(--accent)">ЗАДАНИЯ</h2>
+    <div id="bonus-p" class="page">
+        <h2 style="color:var(--accent)">БОНУСЫ</h2>
+        <div class="item"><div style="text-align: left;"><b>Рекламная пауза</b><br><small>+25,000 монет</small></div>
+            <button class="btn" onclick="showAds()">СМОТРЕТЬ</button>
+        </div>
         <div class="item" id="task1_box">
-            <div style="text-align: left;"><b>Подписка на канал</b><br><small>+50,000 монет</small></div>
-            <div style="display: flex; gap: 5px;">
-                <button class="btn" id="go_btn" onclick="startTask('https://t.me/+Y2TfUjjZl1dlNTFi')">ПЕРЕЙТИ</button>
-                <button class="btn" style="background:var(--accent); display:none;" id="check_btn" onclick="checkTask()">ПРОВЕРИТЬ</button>
-            </div>
+            <div style="text-align: left;"><b>Подписка</b><br><small>+50,000 монет</small></div>
+            <button class="btn" onclick="startTask('https://t.me/твой_канал_тут')">ПЕРЕЙТИ</button>
         </div>
     </div>
 
     <div class="nav">
         <button id="b-game" class="active" onclick="go('game')">ИГРА</button>
         <button id="b-shop" onclick="go('shop')">МАГАЗИН</button>
-        <button id="b-tasks" onclick="go('tasks')">ЗАДАНИЯ</button>
+        <button id="b-bonus" onclick="go('bonus')">БОНУСЫ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
+        const AdController = window.Adsgram.init({ blockId: "21004" }); // Твій блок
         tg.expand();
 
         let c = parseInt(localStorage.getItem('c')) || 0;
@@ -113,11 +94,16 @@
             localStorage.setItem('isSubbed', isSubbed);
         }
 
-        function tap(e) {
-            if (e) e.preventDefault();
-            if (en >= mt) { c += mt; en -= mt; tg.HapticFeedback.impactOccurred('light'); upd(); }
-        }
+        // Реклама Adsgram
+        window.showAds = () => {
+            AdController.show().then((result) => {
+                c += 25000; upd(); tg.showAlert("Вы получили бонус 25,000 монет!");
+            }).catch((err) => {
+                tg.showAlert("Реклама пока не готова, попробуйте позже.");
+            });
+        };
 
+        function tap(e) { if (e) e.preventDefault(); if (en >= mt) { c += mt; en -= mt; tg.HapticFeedback.impactOccurred('light'); upd(); } }
         const btn = document.getElementById('coin-btn');
         btn.ontouchstart = tap; btn.onclick = tap;
 
@@ -128,43 +114,16 @@
             document.getElementById('b-' + p).classList.add('active');
         }
 
-        window.buyMT = () => {
-            let cost = mt * (mt + 1) * 1000;
-            if (c >= cost) { c -= cost; mt++; upd(); tg.showAlert("Мультитап прокачан!"); }
-        };
+        window.buyMT = () => { let cost = mt*(mt+1)*1000; if(c>=cost){ c-=cost; mt++; upd(); } };
+        window.buyMaxEn = () => { let cost = enLvl*(enLvl+1)*1000; if(c>=cost){ c-=cost; enLvl++; maxEn+=500; en=maxEn; upd(); } };
+        window.buyAC = () => { if(c>=5000 && acTime===0){ c-=5000; acTime=60; document.getElementById('ac-status').style.display='block'; upd(); } };
 
-        window.buyMaxEn = () => {
-            let cost = enLvl * (enLvl + 1) * 1000;
-            if (c >= cost) { c -= cost; enLvl++; maxEn += 500; en = maxEn; upd(); tg.showAlert("Энергия увеличена!"); }
-        };
-
-        window.buyAC = () => {
-            if (c >= 5000 && acTime === 0) {
-                c -= 5000; acTime = 60;
-                document.getElementById('ac-status').style.display = 'block';
-                upd();
-                tg.showAlert("Автокликер запущен!");
-            }
-        };
-
-        window.startTask = (url) => {
-            tg.openTelegramLink(url);document.getElementById('go_btn').innerText = "ГОТОВО";
-            document.getElementById('check_btn').style.display = "block";
-        };
-
-        window.checkTask = () => {
-            const btnCheck = document.getElementById('check_btn');
-            btnCheck.innerText = "ПРОВЕРКА...";
-            btnCheck.disabled = true;
-            setTimeout(() => { c += 50000; isSubbed = true; upd(); tg.showAlert("Задание выполнено!"); }, 5000);
-        };
+        window.startTask = (url) => { tg.openTelegramLink(url); isSubbed = true; c += 50000; upd(); };
 
         setInterval(() => {
             if(en < maxEn) en += 2;
             if (acTime > 0) {
-                acTime--;
-                document.getElementById('ac-timer').innerText = acTime;
-                for(let i=0; i<5; i++) { if (en >= mt) { c += mt; en -= mt; } }
+                acTime--; document.getElementById('ac-timer').innerText = acTime;for(let i=0; i<5; i++) { if (en >= mt) { c += mt; en -= mt; } }
                 if (acTime === 0) document.getElementById('ac-status').style.display = 'none';
             }
             upd();
