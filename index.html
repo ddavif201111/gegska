@@ -11,7 +11,7 @@
         #bal { font-size: 64px; font-weight: 900; color: var(--accent); margin: 20px 0; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
         
         #coin {
-            width: 260px; height: 260px; border-radius: 50%;
+            width: 250px; height: 250px; border-radius: 50%;
             background: linear-gradient(145deg, #1a1a1a, #000);
             display: inline-flex; align-items: center; justify-content: center;
             font-size: 110px; border: 4px solid var(--purple);
@@ -21,20 +21,20 @@
         }
         #coin:active { transform: scale(0.92); }
 
-        .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 85%; margin: 20px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 85%; margin: 15px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .bar { background: #111; height: 14px; border-radius: 7px; margin-top: 10px; overflow: hidden; border: 1px solid #333; }
         #fill { background: linear-gradient(90deg, var(--neon), var(--purple)); height: 100%; width: 100%; transition: 0.2s; }
 
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; border-top: 1px solid #333; padding-bottom: 10px; }
-        .nav button { flex: 1; padding: 18px; background: none; border: none; color: #888; font-weight: bold; }
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; border-top: 1px solid #333; padding-bottom: 15px; }
+        .nav button { flex: 1; padding: 15px; background: none; border: none; color: #888; font-weight: bold; font-size: 12px; }
         .nav button.active { color: var(--neon); border-top: 2px solid var(--neon); }
         
-        .page { display: none; padding-top: 20px; }
+        .page { display: none; padding-top: 10px; height: 80vh; overflow-y: auto; }
         .page.active { display: block; }
         
-        .shop-item { background: rgba(255,255,255,0.05); margin: 10px 20px; padding: 15px; border-radius: 15px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: var(--neon); color: #000; border: none; padding: 12px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .buy-btn:disabled { background: #444; color: #777; cursor: default; }
+        .item { background: rgba(255,255,255,0.05); margin: 10px 20px; padding: 15px; border-radius: 15px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background: var(--neon); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn:disabled { background: #444; color: #777; }
     </style>
 </head>
 <body>
@@ -46,7 +46,7 @@
         <div id="coin">🐹</div>
         <div class="panel">
             <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;">
-                <span>⚡ ЕНЕРГІЯ</span>
+                <span>⚡ ЭНЕРГИЯ</span>
                 <span id="en-txt">2000 / 2000</span>
             </div>
             <div class="bar"><div id="fill"></div></div>
@@ -55,36 +55,39 @@
 
     <div id="shop-p" class="page">
         <h2 style="color:var(--neon)">МАГАЗИН</h2>
-        
-        <div class="shop-item">
-            <div style="text-align: left;">
-                <b>Мультітап</b><br>
-                <small id="mt-cost">Ціна: 2000</small>
-            </div>
-            <button class="buy-btn" id="mt-btn" onclick="buyMT()">КУПИТИ</button>
+        <div class="item">
+            <div style="text-align: left;"><b>Мультитап</b><br><small id="mt-cost">Цена: 2000</small></div>
+            <button class="btn" id="mt-btn" onclick="buyMT()">КУПИТЬ</button>
         </div>
+        <div class="item">
+            <div style="text-align: left;"><b>Макс. Энергия</b><br><small id="en-cost">Цена: 2000</small></div>
+            <button class="btn" id="en-btn" onclick="buyMaxEn()">КУПИТЬ</button>
+        </div>
+    </div>
 
-        <div class="shop-item">
-            <div style="text-align: left;">
-                <b>Запас енергії</b><br>
-                <small id="en-cost">Ціна: 2000</small>
-            </div>
-            <button class="buy-btn" id="en-btn" onclick="buyMaxEn()">КУПИТИ</button>
+    <div id="tasks-p" class="page">
+        <h2 style="color:var(--accent)">ЗАДАНИЯ</h2>
+        <div class="item" id="t1">
+            <div style="text-align: left;"><b>Подписка на канал</b><br><small>+50,000 монет</small></div>
+            <button class="btn" onclick="doTask('https://t.me/твой_канал_тут', 50000, 't1')">ВЫПОЛНИТЬ</button>
         </div>
     </div>
 
     <div class="nav">
-        <button id="b-game" class="active" onclick="go('game')">ГРА</button>
-        <button id="b-shop" onclick="go('shop')">ШОП</button>
+        <button id="b-game" class="active" onclick="go('game')">ИГРА</button>
+        <button id="b-shop" onclick="go('shop')">МАГАЗИН</button>
+        <button id="b-tasks" onclick="go('tasks')">ЗАДАНИЯ</button>
     </div>
 
-    <script>const tg = window.Telegram.WebApp;
+    <script>
+        const tg = window.Telegram.WebApp;
         tg.expand();
 
         let c = parseInt(localStorage.getItem('c')) || 0;
         let mt = parseInt(localStorage.getItem('m')) || 1;
-        let maxEn = parseInt(localStorage.getItem('maxEn')) || 2000; // Початкова 2000
-        let enLvl = parseInt(localStorage.getItem('enLvl')) || 1; // Рівень енергії для ціни
+        let maxEn = parseInt(localStorage.getItem('maxEn')) || 2000;
+        let enLvl = parseInt(localStorage.getItem('enLvl')) || 1;
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let en = maxEn;
 
         function upd() {
@@ -95,17 +98,19 @@
             document.getElementById('en-txt').innerText = Math.floor(en) + " / " + maxEn;
             document.getElementById('fill').style.width = (en/maxEn*100) + "%";
             document.getElementById('tap-val').innerText = mt;
-            
-            document.getElementById('mt-cost').innerText = "Ціна: " + nextMtCost.toLocaleString();
-            document.getElementById('en-cost').innerText = "Ціна: " + nextEnCost.toLocaleString();
+            document.getElementById('mt-cost').innerText = "Цена: " + nextMtCost.toLocaleString();
+            document.getElementById('en-cost').innerText = "Цена: " + nextEnCost.toLocaleString();
             
             document.getElementById('mt-btn').disabled = (c < nextMtCost);
             document.getElementById('en-btn').disabled = (c < nextEnCost);
+
+            tasks.forEach(t => { if(document.getElementById(t)) document.getElementById(t).style.display = 'none'; });
 
             localStorage.setItem('c', c);
             localStorage.setItem('m', mt);
             localStorage.setItem('maxEn', maxEn);
             localStorage.setItem('enLvl', enLvl);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
         function tap(e) {
@@ -130,25 +135,27 @@
 
         window.buyMT = () => {
             let cost = mt * (mt + 1) * 1000;
-            if (c >= cost) {
-                c -= cost; mt++; upd();
-                tg.showAlert("Мультітап прокачано!");
-            }
+            if (c >= cost) { c -= cost; mt++; upd(); tg.showAlert("Мультитап прокачан!"); }
         };
 
         window.buyMaxEn = () => {
             let cost = enLvl * (enLvl + 1) * 1000;
-            if (c >= cost) {
-                c -= cost;
-                enLvl++;
-                maxEn += 500; // Додаємо +500 до ліміту за кожну покупку
-                en = maxEn;
-                upd();
-                tg.showAlert("Запас енергії збільшено!");
-            }
+            if (c >= cost) { c -= cost; enLvl++; maxEn += 500; en = maxEn; upd(); tg.showAlert("Энергия увеличена!"); }
         };
 
-        setInterval(() => { if(en < maxEn){ en += 2; upd(); } }, 1000); // Реген +2 в сек
+        window.doTask = (url, reward, id) => {
+            tg.openTelegramLink(url);
+            setTimeout(() => {
+                if(!tasks.includes(id)) {
+                    c += reward;
+                    tasks.push(id);
+                    upd();
+                    tg.showAlert("Задание выполнено! + " + reward.toLocaleString());
+                }
+            }, 2000);
+        };
+
+        setInterval(() => { if(en < maxEn){ en += 2; upd(); } }, 1000);
         upd();
     </script>
 </body>
