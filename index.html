@@ -1,95 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #050505; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: manipulation; }
-        .bg { position: fixed; top: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e0044 0%, transparent 50%); z-index: -1; }
-        #bal { font-size: 60px; font-weight: 900; color: #f1c40f; margin: 20px 0; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        #coin {
-            width: 240px; height: 240px; border-radius: 50%;
-            background: linear-gradient(145deg, #1a1a1a, #000);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 100px; border: 4px solid #7000ff;
-            box-shadow: 0 0 30px rgba(112,0,255,0.3);
-            cursor: pointer; transition: transform 0.05s;
-            -webkit-user-select: none; user-select: none;
-        }
-        #coin:active { transform: scale(0.95); }
-        .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 80%; margin: 20px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .bar { background: #111; height: 10px; border-radius: 5px; margin-top: 10px; overflow: hidden; }
-        #fill { background: linear-gradient(90deg, #00f2ff, #7000ff); height: 100%; width: 100%; }
-        
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; padding: 10px 0; border-top: 1px solid #333; }
-        .nav button { flex: 1; background: none; border: none; color: #888; font-weight: bold; font-size: 14px; }
-        .nav button.active { color: #00f2ff; }
-        
-        .page { display: none; padding-top: 20px; }
+        :root { --primary: #00f2ff; --secondary: #7000ff; --accent: #f1c40f; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; touch-action: none; -webkit-tap-highlight-color: transparent; }
+        .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e0044 0%, transparent 50%); z-index: -1; }
+        .header { width: 90%; display: flex; justify-content: space-between; padding: 20px; font-weight: bold; color: var(--accent); }
+        .balance { font-size: 60px; font-weight: 900; text-shadow: 0 0 20px rgba(241, 196, 15, 0.5); margin: 10px 0; }
+        .coin-wrapper { position: relative; width: 250px; height: 250px; margin-top: 10px; }
+        .main-button { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(145deg, #1a1a1a, #000); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(0, 0, 0, 1), inset 0 0 20px rgba(112, 0, 255, 0.3); border: 4px solid #222; transition: transform 0.05s; }
+        .coin-emoji { font-size: 110px; z-index: 1; }
+        #click-sensor { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; z-index: 100; cursor: pointer; }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 20px; width: 85%; padding: 15px; margin-top: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .energy-bar { background: #111; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 8px; border: 1px solid #333; }
+        .energy-fill { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; width: 100%; transition: width 0.2s; }
+        .nav { position: fixed; bottom: 20px; display: flex; width: 92%; gap: 10px; }
+        .tab-btn { flex: 1; padding: 15px; border-radius: 15px; border: 1px solid #333; background: #111; color: #888; font-weight: bold; }
+        .tab-btn.active { background: var(--secondary); color: white; border-color: var(--primary); }
+        .page { display: none; width: 100%; text-align: center; }
         .page.active { display: block; }
-        .quest-item { background: rgba(255,255,255,0.07); margin: 10px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-q { background: #00f2ff; color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
+        .item { background: rgba(255,255,255,0.05); margin: 10px 20px; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
+        .buy-btn { background: var(--primary); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
+    <div class="bg-glow"></div>
+    <div class="header"><span>LVL: ELITE</span><span id="tap-val">X1</span></div>
 
-    <div id="game-p" class="page active">
-        <div id="bal">0</div>
-        <div id="coin">🐹</div>
-        <div class="panel">
-            <div style="display:flex; justify-content:space-between; font-size:12px"><span>⚡ ЕНЕРГІЯ</span><span id="en-txt">500</span></div>
-            <div class="bar"><div id="fill"></div></div>
+    <div id="game-page" class="page active">
+        <div class="balance" id="bal">0</div>
+        <div style="display: flex; justify-content: center;">
+            <div class="coin-wrapper">
+                <div class="main-button" id="coin-visual"><span class="coin-emoji">🐹</span></div>
+                <div id="click-sensor"></div>
+            </div>
+        </div>
+        <div class="glass-panel">
+            <div style="display:flex; justify-content:space-between; font-size:12px;"><span>⚡ ЕНЕРГІЯ</span><span id="en-text">500/500</span></div>
+            <div class="energy-bar"><div class="energy-fill" id="en-fill"></div></div>
         </div>
     </div>
 
-    <div id="quest-p" class="page">
-        <h2 style="color: #00f2ff">КВЕСТИ</h2>
-        <div class="quest-item">
-            <div style="text-align:left"><b>Підписка</b><br><small>+50,000 монет</small></div>
-            <button class="btn-q" onclick="window.open('ТВОЄ_ПОСИЛАННЯ', '_blank')">ЙТИ</button>
+    <div id="task-page" class="page">
+        <h2 style="color: var(--accent); margin-top: 30px;">ЗАВДАННЯ</h2>
+        <div class="item">
+            <div style="text-align:left"><b>Підпишись на канал</b><br><small>+100,000 монет</small></div>
+            <button class="buy-btn" onclick="openTask('https://t.me/твій_канал')">ЙТИ</button>
         </div>
-    </div>
-
-    <div class="nav">
-        <button id="b-game" class="active" onclick="show('game')">ГРА</button>
-        <button id="b-quest" onclick="show('quest')">КВЕСТИ</button>
+    </div><div class="nav">
+        <button class="tab-btn active" onclick="go('game', this)">ГРА</button>
+        <button class="tab-btn" onclick="go('task', this)">КВЕСТИ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-
-        let c = parseInt(localStorage.getItem('c')) || 0;
-        let mt = 1; let en = 500; let maxEn = 500;
+        let coins = parseInt(localStorage.getItem('c')) || 0;
+        let mt = 1; let me = 500; let en = me;
 
         function upd() {
-            document.getElementById('bal').innerText = c.toLocaleString();
-            document.getElementById('en-txt').innerText = en;
-            document.getElementById('fill').style.width = (en/maxEn*100) + "%";
-            localStorage.setItem('c', c);
+            document.getElementById('bal').innerText = coins.toLocaleString();
+            document.getElementById('en-text').innerText = ${Math.floor(en)} / ${me};
+            document.getElementById('en-fill').style.width = (en/me*100) + "%";
+            localStorage.setItem('c', coins);
         }
 
-        const coinEl = document.getElementById('coin');
-        function doTap(e) {
-            if (e) e.preventDefault();
+        function tap() {
             if (en >= mt) {
-                c += mt; en -= mt;
+                coins += mt; en -= mt;
+                const v = document.getElementById('coin-visual');
+                v.style.transform = "scale(0.95)";
+                setTimeout(() => v.style.transform = "scale(1)", 50);
                 tg.HapticFeedback.impactOccurred('light');
                 upd();
             }
         }
 
-        coinEl.addEventListener('touchstart', doTap);
-        coinEl.onclick = doTap;function show(p) {
+        function go(p, b) {
             document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.nav button').forEach(x => x.classList.remove('active'));
-            document.getElementById(p + '-p').classList.add('active');
-            document.getElementById('b-' + p).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+            document.getElementById(p + '-page').classList.add('active');
+            b.classList.add('active');
         }
 
-        setInterval(() => { if(en < maxEn){ en++; upd(); } }, 1000);
+        window.openTask = (u) => { tg.openTelegramLink(u); };
+        const s = document.getElementById('click-sensor');
+        s.addEventListener('touchstart', (e) => { e.preventDefault(); tap(); }, {passive: false});
+        s.onclick = tap;
+
+        setInterval(() => { if(en < me){ en++; upd(); } }, 1000);
         upd();
     </script>
 </body>
