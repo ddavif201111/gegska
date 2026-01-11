@@ -3,26 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?v=1.3"></script>
     <style>
         :root { --accent: #f1c40f; --neon: #00f2ff; --purple: #7000ff; }
-        body { background: #050505; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; }
+        body { background: #050505; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
         .bg { position: fixed; top: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e0044 0%, transparent 50%); z-index: -1; }
-        #bal { font-size: 64px; font-weight: 900; color: var(--accent); margin: 20px 0; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
-        #coin { width: 250px; height: 250px; border-radius: 50%; background: linear-gradient(145deg, #1a1a1a, #000); display: inline-flex; align-items: center; justify-content: center; font-size: 110px; border: 4px solid var(--purple); box-shadow: 0 0 40px #000, inset 0 0 20px rgba(112,0,255,0.3); cursor: pointer; transition: transform 0.05s; touch-action: none; -webkit-user-select: none; }
-        #coin:active { transform: scale(0.92); }
-        .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 85%; margin: 15px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        #bal { font-size: 70px; font-weight: 900; color: var(--accent); margin: 30px 0; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
+        
+        #coin-btn {
+            width: 250px; height: 250px; border-radius: 50%;
+            background: linear-gradient(145deg, #1a1a1a, #000);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 110px; border: 4px solid var(--purple);
+            box-shadow: 0 0 40px #000, inset 0 0 20px rgba(112,0,255,0.3);
+            cursor: pointer; transition: transform 0.05s;
+            -webkit-user-select: none; user-select: none;
+        }
+        #coin-btn:active { transform: scale(0.92); }
+
+        .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 85%; margin: 15px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
         .bar { background: #111; height: 14px; border-radius: 7px; margin-top: 10px; overflow: hidden; border: 1px solid #333; }
         #fill { background: linear-gradient(90deg, var(--neon), var(--purple)); height: 100%; width: 100%; transition: 0.2s; }
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; border-top: 1px solid #333; padding-bottom: 15px; }
+
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; border-top: 1px solid #333; padding-bottom: 20px; }
         .nav button { flex: 1; padding: 15px; background: none; border: none; color: #888; font-weight: bold; font-size: 12px; }
         .nav button.active { color: var(--neon); border-top: 2px solid var(--neon); }
-        .page { display: none; padding-top: 10px; height: 80vh; overflow-y: auto; }
+        
+        .page { display: none; padding-top: 10px; height: 75vh; overflow-y: auto; }
         .page.active { display: block; }
         .item { background: rgba(255,255,255,0.05); margin: 10px 20px; padding: 15px; border-radius: 15px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .btn { background: var(--neon); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .btn:disabled { background: #444; color: #777; }
-        .check-btn { background: var(--accent); color: #000; display: none; }
+        #ac-status { color: var(--neon); font-weight: bold; display: none; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -31,7 +43,8 @@
 
     <div id="game-p" class="page active">
         <div id="bal">0</div>
-        <div id="coin">🐹</div>
+        <div id="coin-btn">🐹</div>
+        <div id="ac-status">🚀 АВТОКЛИК: <span id="ac-timer">60</span>s</div>
         <div class="panel">
             <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;"><span>⚡ ЭНЕРГИЯ</span><span id="en-txt">2000 / 2000</span></div>
             <div class="bar"><div id="fill"></div></div>
@@ -42,11 +55,14 @@
         <h2 style="color:var(--neon)">МАГАЗИН</h2>
         <div class="item">
             <div style="text-align: left;"><b>Мультитап</b><br><small id="mt-cost">Цена: 2000</small></div>
-            <button class="btn" id="mt-btn" onclick="buyMT()">КУПИТИ</button>
+            <button class="btn" id="mt-btn" onclick="buyMT()">КУПИТЬ</button>
         </div>
         <div class="item">
-            <div style="text-align: left;"><b>Макс. Энергия</b><br><small id="en-cost">Цена: 2000</small></div>
-            <button class="btn" id="en-btn" onclick="buyMaxEn()">КУПИТИ</button>
+            <div style="text-align: left;"><b>Запас энергии</b><br><small id="en-cost">Цена: 2000</small></div>
+            <button class="btn" id="en-btn" onclick="buyMaxEn()">КУПИТЬ</button>
+        </div>
+        <div class="item"><div style="text-align: left;"><b>Автокликер (1м)</b><br><small>Цена: 5000</small></div>
+            <button class="btn" id="ac-btn" onclick="buyAC()">КУПИТЬ</button>
         </div>
     </div>
 
@@ -56,7 +72,7 @@
             <div style="text-align: left;"><b>Подписка на канал</b><br><small>+50,000 монет</small></div>
             <div style="display: flex; gap: 5px;">
                 <button class="btn" id="go_btn" onclick="startTask('https://t.me/твой_канал_тут')">ПЕРЕЙТИ</button>
-                <button class="btn check-btn" id="check_btn" onclick="checkTask()">ПРОВЕРИТЬ</button>
+                <button class="btn" style="background:var(--accent); display:none;" id="check_btn" onclick="checkTask()">ПРОВЕРИТЬ</button>
             </div>
         </div>
     </div>
@@ -77,6 +93,7 @@
         let enLvl = parseInt(localStorage.getItem('enLvl')) || 1;
         let isSubbed = localStorage.getItem('isSubbed') === 'true';
         let en = maxEn;
+        let acTime = 0;
 
         function upd() {
             let nextMtCost = mt * (mt + 1) * 1000;
@@ -89,28 +106,20 @@
             document.getElementById('en-cost').innerText = "Цена: " + nextEnCost.toLocaleString();
             document.getElementById('mt-btn').disabled = (c < nextMtCost);
             document.getElementById('en-btn').disabled = (c < nextEnCost);
-
+            document.getElementById('ac-btn').disabled = (c < 5000 || acTime > 0);
             if(isSubbed) document.getElementById('task1_box').style.display = 'none';
-
-            localStorage.setItem('c', c);
-            localStorage.setItem('m', mt);
-            localStorage.setItem('maxEn', maxEn);
-            localStorage.setItem('enLvl', enLvl);
+            localStorage.setItem('c', c); localStorage.setItem('m', mt);
+            localStorage.setItem('maxEn', maxEn); localStorage.setItem('enLvl', enLvl);
             localStorage.setItem('isSubbed', isSubbed);
         }
 
         function tap(e) {
             if (e) e.preventDefault();
-            if (en >= mt) {
-                c += mt; en -= mt;
-                tg.HapticFeedback.impactOccurred('light');
-                upd();
-            }
+            if (en >= mt) { c += mt; en -= mt; tg.HapticFeedback.impactOccurred('light'); upd(); }
         }
 
-        const coinBtn = document.getElementById('coin');
-        coinBtn.ontouchstart = tap;
-        coinBtn.onclick = tap;
+        const btn = document.getElementById('coin-btn');
+        btn.ontouchstart = tap; btn.onclick = tap;
 
         function go(p) {
             document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
@@ -129,27 +138,37 @@
             if (c >= cost) { c -= cost; enLvl++; maxEn += 500; en = maxEn; upd(); tg.showAlert("Энергия увеличена!"); }
         };
 
-        // Логіка квесту
+        window.buyAC = () => {
+            if (c >= 5000 && acTime === 0) {
+                c -= 5000; acTime = 60;
+                document.getElementById('ac-status').style.display = 'block';
+                upd();
+                tg.showAlert("Автокликер запущен!");
+            }
+        };
+
         window.startTask = (url) => {
-            tg.openTelegramLink(url);
-            document.getElementById('go_btn').innerText = "ГОТОВО";
+            tg.openTelegramLink(url);document.getElementById('go_btn').innerText = "ГОТОВО";
             document.getElementById('check_btn').style.display = "block";
         };
 
         window.checkTask = () => {
-            const btn = document.getElementById('check_btn');
-            btn.innerText = "ПРОВЕРКА...";
-            btn.disabled = true;
-
-            setTimeout(() => {
-                c += 40000;
-                isSubbed = true;
-                upd();
-                tg.showAlert("Подписка подтверждена! +50,000 монет");
-            }, 5000); // 5 секунд імітації перевірки
+            const btnCheck = document.getElementById('check_btn');
+            btnCheck.innerText = "ПРОВЕРКА...";
+            btnCheck.disabled = true;
+            setTimeout(() => { c += 50000; isSubbed = true; upd(); tg.showAlert("Задание выполнено!"); }, 5000);
         };
 
-        setInterval(() => { if(en < maxEn){ en += 2; upd(); } }, 1000);
+        setInterval(() => {
+            if(en < maxEn) en += 2;
+            if (acTime > 0) {
+                acTime--;
+                document.getElementById('ac-timer').innerText = acTime;
+                for(let i=0; i<5; i++) { if (en >= mt) { c += mt; en -= mt; } }
+                if (acTime === 0) document.getElementById('ac-status').style.display = 'none';
+            }
+            upd();
+        }, 1000);
         upd();
     </script>
 </body>
