@@ -3,107 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://telegram.org/js/telegram-web-app.js?v=3.0"></script>
-    <script src="https://sad.adsgram.ai/js/adsgram-adbox.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #0a0a0b; --card: #151517; --gold: #f3ba2f; --text: #ececec; --grey: #848e9c; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; }
+        :root { --blue: #007aff; --bg: #f4f4f7; --text: #000000; --card: #ffffff; --grey: #8e8e93; }
+        /* Темна тема для ТГ */
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #000000; --text: #ffffff; --card: #1c1c1e; --grey: #8e8e93; }
+        }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; }
         
-        .header { padding: 20px; text-align: left; background: var(--card); border-bottom: 1px solid #2b2f36; }
-        .token-name { color: var(--gold); font-weight: bold; font-size: 14px; letter-spacing: 1px; }
-        .main-balance { font-size: 42px; font-weight: 600; margin: 10px 0; }
-        .usd-val { color: var(--grey); font-size: 14px; }
+        .header { padding: 25px 20px; text-align: center; }
+        .balance-label { color: var(--grey); font-size: 14px; font-weight: 500; }
+        .main-balance { font-size: 38px; font-weight: 700; margin: 5px 0; }
 
-        .mining-info { background: var(--card); margin: 15px; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
-        .hash-power { font-size: 18px; font-weight: bold; color: #00ff88; }
+        .actions { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        .action-btn { background: var(--blue); color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 600; font-size: 15px; }
+
+        .section-title { padding: 0 20px 10px; font-size: 13px; color: var(--grey); text-transform: uppercase; font-weight: 600; }
         
-        .page { display: none; padding-bottom: 100px; height: 80vh; overflow-y: auto; }
+        .asset-list { background: var(--card); border-radius: 15px; margin: 0 15px 25px; overflow: hidden; }
+        .asset-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid rgba(142,142,147,0.2); }
+        .asset-item:last-child { border-bottom: none; }
+        .asset-icon { width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .asset-info { flex: 1; text-align: left; }
+        .asset-name { font-weight: 600; font-size: 16px; }
+        .asset-amount { color: var(--grey); font-size: 14px; }
+        .asset-value { text-align: right; font-weight: 600; }
+
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); border-top: 1px solid rgba(142,142,147,0.2); padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; padding: 12px 0; text-align: center; color: var(--grey); font-size: 10px; font-weight: 600; }
+        .nav-item.active { color: var(--blue); }
+        
+        .page { display: none; }
         .page.active { display: block; }
-
-        .asset-card { background: var(--card); margin: 10px 15px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; border: 1px solid #2b2f36; }
-        .btn-action { background: var(--gold); color: black; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 90%; margin: 10px auto; display: block; }
-        
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); border-top: 1px solid #2b2f36; padding-bottom: 25px; }
-        .nav-item { flex: 1; padding: 15px; text-align: center; color: var(--grey); font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .nav-item.active { color: var(--gold); }
-
-        /* Анімація пульсації майнінгу */
-        .mining-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px #00ff88; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="token-name">$GEGHT PROTOCOL</div>
-        <div class="main-balance" id="bal">0.0000</div>
-        <div class="usd-val">≈ $<span id="usd">0.00</span> USD</div>
-    </div>
-
     <div id="wallet-p" class="page active">
-        <div class="mining-info">
-            <div>
-                <div class="mining-dot"></div>
-                <span style="font-size: 12px; color: var(--grey);">CLOUD MINING ACTIVE</span>
-            </div>
-            <div class="hash-power"><span id="rate">0.0001</span> /sec</div>
+        <div class="header">
+            <div class="balance-label">Общий баланс</div>
+            <div class="main-balance">$<span id="total-usd">0.00</span></div>
         </div>
-        
-        <div style="padding: 15px; text-align: left; font-size: 14px; color: var(--grey);">MY ASSETS</div>
-        <div class="asset-card">
-            <b>$GEGHT (Mainnet)</b>
-            <span id="asset-val">0.00</span>
-        </div>
-        <button class="btn-action" onclick="showAds()">CLAIM BONUS (ADS)</button>
-    </div>
 
-    <div id="nodes-p" class="page">
-        <h3 style="margin: 20px;">MINING NODES</h3>
-        <div class="asset-card">
-            <div style="text-align: left;">
-                <b>GPU Server V1</b><br>
-                <small>+0.0005 /sec</small>
-            </div>
-            <button class="btn-action" style="width: auto; margin: 0;" onclick="buyNode(0.0005, 500)" id="n1-btn">500 $</button>
+        <div class="actions">
+            <button class="action-btn" onclick="tg.showAlert('Пополнение временно недоступно')">Получить</button>
+            <button class="action-btn" style="background: rgba(142,142,147,0.2); color: var(--blue);" onclick="tg.showAlert('У вас нет активов для отправки')">Отправить</button>
         </div>
-        <div class="asset-card">
-            <div style="text-align: left;">
-                <b>ASIC Miner X10</b><br>
-                <small>+0.0025 /sec</small>
+
+        <div class="section-title">Активы</div>
+        <div class="asset-list">
+            <div class="asset-item">
+                <div class="asset-icon" style="background: #0088cc;">T</div>
+                <div class="asset-info"><div class="asset-name">Toncoin</div><div class="asset-amount">0 TON</div></div>
+                <div class="asset-value">$0.00</div>
             </div>
-            <button class="btn-action" style="width: auto; margin: 0;" onclick="buyNode(0.0025, 2500)" id="n2-btn">2500 $</button>
+            <div class="asset-item">
+                <div class="asset-icon" style="background: #26a17b;">U</div>
+                <div class="asset-info"><div class="asset-name">Tether</div><div class="asset-amount">0 USDT</div></div>
+                <div class="asset-value">$0.00</div>
+            </div>
+            <div class="asset-item">
+                <div class="asset-icon" style="background: #f7931a;">B</div>
+                <div class="asset-info"><div class="asset-name">Bitcoin</div><div class="asset-amount">0 BTC</div></div>
+                <div class="asset-value">$0.00</div>
+            </div>
         </div>
     </div>
 
-    <div class="nav"><div class="nav-item active" id="n-wallet" onclick="go('wallet')">WALLET</div>
-        <div class="nav-item" id="n-nodes" onclick="go('nodes')">NODES</div>
+    <div id="p2p-p" class="page"><div style="padding: 100px 20px; text-align: center; color: var(--grey);">
+            <h3>P2P Маркет</h3>
+            <p>Здесь будут объявления о покупке и продаже криптовалюты.</p>
+        </div>
+    </div>
+
+    <div id="settings-p" class="page">
+        <div class="section-title" style="margin-top: 20px;">Настройки</div>
+        <div class="asset-list">
+            <div class="asset-item" onclick="tg.showAlert('ID: ' + tg.initDataUnsafe.user.id)">
+                <div class="asset-info"><div class="asset-name">Мой ID</div></div>
+                <div class="asset-value" style="color: var(--blue);">Показать</div>
+            </div>
+            <div class="asset-item">
+                <div class="asset-info"><div class="asset-name">Валюта</div></div>
+                <div class="asset-value">USD</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" id="n-wallet" onclick="go('wallet')">КОШЕЛЕК</div>
+        <div class="nav-item" id="n-p2p" onclick="go('p2p')">P2P</div>
+        <div class="nav-item" id="n-settings" onclick="go('settings')">НАСТРОЙКИ</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "21004" }) : null;
         tg.expand();
-        tg.backgroundColor = "#0a0a0b";
-
-        let bal = parseFloat(localStorage.getItem('crypto_bal')) || 0;
-        let rate = parseFloat(localStorage.getItem('crypto_rate')) || 0.0001;
-        let lastTime = parseInt(localStorage.getItem('last_time')) || Date.now();
-
-        // Розрахунок прибутку за час відсутності
-        const now = Date.now();
-        const diff = (now - lastTime) / 1000;
-        bal += diff * rate;
-
-        function upd() {
-            document.getElementById('bal').innerText = bal.toFixed(4);
-            document.getElementById('asset-val').innerText = bal.toFixed(2);
-            document.getElementById('usd').innerText = (bal * 0.12).toFixed(2); // Умовний курс $0.12
-            document.getElementById('rate').innerText = rate.toFixed(4);
-            
-            localStorage.setItem('crypto_bal', bal);
-            localStorage.setItem('crypto_rate', rate);
-            localStorage.setItem('last_time', Date.now());
-        }
+        tg.ready();
 
         function go(p) {
             document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
@@ -111,33 +108,6 @@
             document.getElementById(p + '-p').classList.add('active');
             document.getElementById('n-' + p).classList.add('active');
         }
-
-        window.buyNode = (add, cost) => {
-            if (bal >= cost) {
-                bal -= cost;
-                rate += add;
-                upd();
-                tg.showAlert("Node activated! Mining power increased.");
-            } else {
-                tg.showAlert("Insufficient $GEGHT balance.");
-            }
-        };
-
-        window.showAds = () => {
-            if(AdController) {
-                AdController.show().then(() => {
-                    bal += 500; upd(); tg.showAlert("Received 500 $GEGHT");
-                }).catch(() => { tg.showAlert("Ads not ready."); });
-            }
-        };
-
-        // Майнінг цикл (кожну секунду)
-        setInterval(() => {
-            bal += rate;
-            upd();
-        }, 1000);
-
-        upd();
     </script>
 </body>
 </html>
