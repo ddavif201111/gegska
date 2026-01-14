@@ -3,146 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js?v=3.0"></script>
     <script src="https://sad.adsgram.ai/js/adsgram-adbox.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js?v=2.0"></script>
     <style>
-        :root { --accent: #f1c40f; --neon: #00f2ff; --purple: #7000ff; }
-        body { background: #050505; color: white; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: none; -webkit-user-select: none; }
-        .bg { position: fixed; top: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 20%, #1e0044 0%, transparent 50%); z-index: -1; }
-        #bal { font-size: 70px; font-weight: 900; color: var(--accent); margin: 30px 0; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
+        :root { --bg: #0a0a0b; --card: #151517; --gold: #f3ba2f; --text: #ececec; --grey: #848e9c; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; }
         
-        #coin-btn {
-            width: 250px; height: 250px; border-radius: 50%;
-            background: linear-gradient(145deg, #1a1a1a, #000);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 110px; border: 4px solid var(--purple);
-            box-shadow: 0 0 40px #000, inset 0 0 20px rgba(112,0,255,0.3);
-            cursor: pointer; margin: 0 auto;
-        }
+        .header { padding: 20px; text-align: left; background: var(--card); border-bottom: 1px solid #2b2f36; }
+        .token-name { color: var(--gold); font-weight: bold; font-size: 14px; letter-spacing: 1px; }
+        .main-balance { font-size: 42px; font-weight: 600; margin: 10px 0; }
+        .usd-val { color: var(--grey); font-size: 14px; }
 
-        .panel { background: rgba(255,255,255,0.05); border-radius: 20px; width: 85%; margin: 15px auto; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .bar { background: #111; height: 14px; border-radius: 7px; margin-top: 10px; overflow: hidden; border: 1px solid #333; }
-        #fill { background: linear-gradient(90deg, var(--neon), var(--purple)); height: 100%; width: 100%; transition: 0.1s; }
-
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #111; border-top: 1px solid #333; padding-bottom: 25px; }
-        .nav button { flex: 1; padding: 15px; background: none; border: none; color: #888; font-weight: bold; font-size: 12px; }
-        .nav button.active { color: var(--neon); border-top: 2px solid var(--neon); }
+        .mining-info { background: var(--card); margin: 15px; padding: 20px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .hash-power { font-size: 18px; font-weight: bold; color: #00ff88; }
         
-        .page { display: none; padding-top: 10px; height: 75vh; }
+        .page { display: none; padding-bottom: 100px; height: 80vh; overflow-y: auto; }
         .page.active { display: block; }
-        .item { background: rgba(255,255,255,0.05); margin: 10px 20px; padding: 15px; border-radius: 15px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .btn { background: var(--neon); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-        .btn:disabled { background: #444; color: #777; }
+
+        .asset-card { background: var(--card); margin: 10px 15px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; border: 1px solid #2b2f36; }
+        .btn-action { background: var(--gold); color: black; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 90%; margin: 10px auto; display: block; }
+        
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); border-top: 1px solid #2b2f36; padding-bottom: 25px; }
+        .nav-item { flex: 1; padding: 15px; text-align: center; color: var(--grey); font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .nav-item.active { color: var(--gold); }
+
+        /* Анімація пульсації майнінгу */
+        .mining-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 10px #00ff88; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
-    <div style="padding-top:15px; color:var(--accent); font-weight:bold; font-size: 11px;">LVL: ELITE</div>
 
-    <div id="game-p" class="page active">
-        <div id="bal">0</div>
-        <div id="coin-btn" onpointerdown="tap(event)">🐹</div>
-        <div id="ac-status" style="display:none; color:var(--neon); margin-top:10px; font-weight:bold;">🚀 АВТОКЛИК: <span id="ac-timer">60</span>s</div>
-        <div class="panel">
-            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:bold;"><span>⚡ ЭНЕРГИЯ</span><span id="en-txt">2000 / 2000</span></div>
-            <div class="bar"><div id="fill"></div></div>
+    <div class="header">
+        <div class="token-name">$GEGHT PROTOCOL</div>
+        <div class="main-balance" id="bal">0.0000</div>
+        <div class="usd-val">≈ $<span id="usd">0.00</span> USD</div>
+    </div>
+
+    <div id="wallet-p" class="page active">
+        <div class="mining-info">
+            <div>
+                <div class="mining-dot"></div>
+                <span style="font-size: 12px; color: var(--grey);">CLOUD MINING ACTIVE</span>
+            </div>
+            <div class="hash-power"><span id="rate">0.0001</span> /sec</div>
+        </div>
+        
+        <div style="padding: 15px; text-align: left; font-size: 14px; color: var(--grey);">MY ASSETS</div>
+        <div class="asset-card">
+            <b>$GEGHT (Mainnet)</b>
+            <span id="asset-val">0.00</span>
+        </div>
+        <button class="btn-action" onclick="showAds()">CLAIM BONUS (ADS)</button>
+    </div>
+
+    <div id="nodes-p" class="page">
+        <h3 style="margin: 20px;">MINING NODES</h3>
+        <div class="asset-card">
+            <div style="text-align: left;">
+                <b>GPU Server V1</b><br>
+                <small>+0.0005 /sec</small>
+            </div>
+            <button class="btn-action" style="width: auto; margin: 0;" onclick="buyNode(0.0005, 500)" id="n1-btn">500 $</button>
+        </div>
+        <div class="asset-card">
+            <div style="text-align: left;">
+                <b>ASIC Miner X10</b><br>
+                <small>+0.0025 /sec</small>
+            </div>
+            <button class="btn-action" style="width: auto; margin: 0;" onclick="buyNode(0.0025, 2500)" id="n2-btn">2500 $</button>
         </div>
     </div>
 
-    <div id="shop-p" class="page">
-        <h2 style="color:var(--neon)">МАГАЗИН</h2>
-        <div class="item"><div><b>Мультитап</b><br><small id="mt-cost">2000</small></div><button class="btn" id="mt-btn" onclick="buyMT()">КУПИТЬ</button></div>
-        <div class="item"><div><b>Макс. Энергия</b><br><small id="en-cost">2000</small></div><button class="btn" id="en-btn" onclick="buyMaxEn()">КУПИТЬ</button></div>
-        <div class="item"><div><b>Автокликер</b><br><small>5000</small></div><button class="btn" id="ac-btn" onclick="buyAC()">КУПИТЬ</button></div>
-    </div>
-
-    <div id="bonus-p" class="page">
-        <h2 style="color:var(--accent)">БОНУСЫ</h2>
-        <div class="item">
-            <div style="text-align: left;"><b>Реклама</b><br><small>+25,000 монет</small></div><button class="btn" onclick="showAds()">СМОТРЕТЬ</button>
-        </div>
-        <div class="item" id="task1_box">
-            <div style="text-align: left;"><b>Подписка</b><br><small>+50,000 монет</small></div>
-            <button class="btn" onclick="startTask('https://t.me/твой_канал_тут')">ПЕРЕЙТИ</button>
-        </div>
-    </div>
-
-    <div class="nav">
-        <button id="b-game" class="active" onclick="go('game')">ИГРА</button>
-        <button id="b-shop" onclick="go('shop')">МАГАЗИН</button>
-        <button id="b-bonus" onclick="go('bonus')">БОНУСЫ</button>
+    <div class="nav"><div class="nav-item active" id="n-wallet" onclick="go('wallet')">WALLET</div>
+        <div class="nav-item" id="n-nodes" onclick="go('nodes')">NODES</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
+        const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "21004" }) : null;
         tg.expand();
+        tg.backgroundColor = "#0a0a0b";
 
-        let c = parseInt(localStorage.getItem('c')) || 0;
-        let mt = parseInt(localStorage.getItem('m')) || 1;
-        let maxEn = parseInt(localStorage.getItem('maxEn')) || 2000;
-        let enLvl = parseInt(localStorage.getItem('enLvl')) || 1;
-        let isSubbed = localStorage.getItem('isSubbed') === 'true';
-        let en = maxEn;
-        let acTime = 0;
+        let bal = parseFloat(localStorage.getItem('crypto_bal')) || 0;
+        let rate = parseFloat(localStorage.getItem('crypto_rate')) || 0.0001;
+        let lastTime = parseInt(localStorage.getItem('last_time')) || Date.now();
+
+        // Розрахунок прибутку за час відсутності
+        const now = Date.now();
+        const diff = (now - lastTime) / 1000;
+        bal += diff * rate;
 
         function upd() {
-            let nextMtCost = mt * (mt + 1) * 1000;
-            let nextEnCost = enLvl * (enLvl + 1) * 1000;
-            document.getElementById('bal').innerText = c.toLocaleString();
-            document.getElementById('en-txt').innerText = Math.floor(en) + " / " + maxEn;
-            document.getElementById('fill').style.width = (en/maxEn*100) + "%";
-            document.getElementById('mt-cost').innerText = "Цена: " + nextMtCost.toLocaleString();
-            document.getElementById('en-cost').innerText = "Цена: " + nextEnCost.toLocaleString();
-            document.getElementById('mt-btn').disabled = (c < nextMtCost);
-            document.getElementById('en-btn').disabled = (c < nextEnCost);
-            document.getElementById('ac-btn').disabled = (c < 5000 || acTime > 0);
-            if(isSubbed) document.getElementById('task1_box').style.display = 'none';
-            localStorage.setItem('c', c); localStorage.setItem('m', mt);
-            localStorage.setItem('maxEn', maxEn); localStorage.setItem('enLvl', enLvl);
-            localStorage.setItem('isSubbed', isSubbed);
-        }
-
-        // Клік через універсальний PointerEvent
-        function tap(e) {
-            if (en >= mt) {
-                c += mt; en -= mt;
-                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-                upd();
-            }
+            document.getElementById('bal').innerText = bal.toFixed(4);
+            document.getElementById('asset-val').innerText = bal.toFixed(2);
+            document.getElementById('usd').innerText = (bal * 0.12).toFixed(2); // Умовний курс $0.12
+            document.getElementById('rate').innerText = rate.toFixed(4);
+            
+            localStorage.setItem('crypto_bal', bal);
+            localStorage.setItem('crypto_rate', rate);
+            localStorage.setItem('last_time', Date.now());
         }
 
         function go(p) {
             document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.nav button').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
             document.getElementById(p + '-p').classList.add('active');
-            document.getElementById('b-' + p).classList.add('active');
+            document.getElementById('n-' + p).classList.add('active');
         }
 
-        window.buyMT = () => { let cost = mt*(mt+1)*1000; if(c>=cost){ c-=cost; mt++; upd(); } };
-        window.buyMaxEn = () => { let cost = enLvl*(enLvl+1)*1000; if(c>=cost){ c-=cost; enLvl++; maxEn+=500; en=maxEn; upd(); } };
-        window.buyAC = () => { if(c>=5000 && acTime===0){ c-=5000; acTime=60; document.getElementById('ac-status').style.display='block'; upd(); } };
-        window.startTask = (url) => { tg.openTelegramLink(url); isSubbed = true; c += 50000; upd(); };
-
-        // Реклама з обробкою помилок
-        window.showAds = () => {
-            if (window.Adsgram) {
-                const AdController = window.Adsgram.init({ blockId: "21004" });
-                AdController.show().then(() => {
-                    c += 25000; upd(); tg.showAlert("Бонус +25,000 монет!");
-                }).catch(() => {
-                    tg.showAlert("Реклама еще не прошла модерацию.");
-                });
+        window.buyNode = (add, cost) => {
+            if (bal >= cost) {
+                bal -= cost;
+                rate += add;
+                upd();
+                tg.showAlert("Node activated! Mining power increased.");
             } else {
-                tg.showAlert("Ошибка загрузки рекламы.");
+                tg.showAlert("Insufficient $GEGHT balance.");
             }
         };
 
-        setInterval(() => {
-            if(en < maxEn) en += 2;
-            if (acTime > 0) {
-                acTime--; document.getElementById('ac-timer').innerText = acTime;
-                for(let i=0; i<5; i++) { if (en >= mt) { c += mt; en -= mt; } }if (acTime === 0) document.getElementById('ac-status').style.display = 'none';
+        window.showAds = () => {
+            if(AdController) {
+                AdController.show().then(() => {
+                    bal += 500; upd(); tg.showAlert("Received 500 $GEGHT");
+                }).catch(() => { tg.showAlert("Ads not ready."); });
             }
+        };
+
+        // Майнінг цикл (кожну секунду)
+        setInterval(() => {
+            bal += rate;
             upd();
         }, 1000);
 
