@@ -9,131 +9,128 @@
         @media (prefers-color-scheme: dark) {
             :root { --bg: #000000; --text: #ffffff; --card: #1c1c1e; --grey: #8e8e93; }
         }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 0; user-select: none; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 0; }
         
         .header { padding: 30px 20px; text-align: center; }
         .bal-label { color: var(--grey); font-size: 14px; font-weight: 500; }
         .main-bal { font-size: 40px; font-weight: 700; margin: 5px 0; }
 
-        .actions { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; }
-        .btn-main { background: var(--blue); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 600; font-size: 15px; flex: 1; max-width: 160px; }
+        .actions { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; padding: 0 16px; }
+        .btn-main { background: var(--blue); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 15px; flex: 1; }
 
         .section-title { padding: 0 20px 10px; font-size: 13px; color: var(--grey); text-transform: uppercase; font-weight: 600; text-align: left; }
         
-        .list-card { background: var(--card); border-radius: 14px; margin: 0 16px 24px; overflow: hidden; }
-        .list-item { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(142,142,147,0.15); cursor: pointer; }
+        .list-card { background: var(--card); border-radius: 14px; margin: 0 16px 20px; overflow: hidden; }
+        .list-item { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(142,142,147,0.1); }
         .list-item:last-child { border-bottom: none; }
-        .coin-icon { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 18px; }
+        .coin-icon { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        
         .info { flex: 1; text-align: left; }
         .name { font-weight: 600; font-size: 16px; }
         .sub { color: var(--grey); font-size: 13px; }
         .val { text-align: right; font-weight: 600; }
 
-        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); border-top: 1px solid rgba(142,142,147,0.15); padding-bottom: 20px; }
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--card); border-top: 1px solid rgba(142,142,147,0.1); padding-bottom: 25px; }
         .nav-item { flex: 1; padding: 12px 0; text-align: center; color: var(--grey); font-size: 10px; font-weight: 700; }
         .nav-item.active { color: var(--blue); }
         
-        .page { display: none; padding-top: 10px; }
+        .page { display: none; }
         .page.active { display: block; }
-
-        input { background: var(--bg); border: none; color: var(--text); padding: 15px; border-radius: 10px; width: 80%; margin: 10px 0; font-size: 16px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="wallet-p" class="page active">
         <div class="header">
-            <div class="bal-label">Кошелек</div>
+            <div class="bal-label">Мой кошелек</div>
             <div class="main-bal">$<span id="usd-bal">0.00</span></div>
         </div>
 
         <div class="actions">
-            <button class="btn-main" onclick="go('checks')">Чеки</button>
-            <button class="btn-main" style="background: rgba(142,142,147,0.2); color: var(--blue);">Маркет</button>
+            <button class="btn-main" onclick="createCheck()">Создать чек</button>
+            <button class="btn-main" style="background: rgba(142,142,147,0.15); color: var(--blue);" onclick="tg.showAlert('Маркет в разработке')">P2P Маркет</button>
         </div>
 
         <div class="section-title">Активы</div>
         <div class="list-card">
             <div class="list-item">
-                <div class="coin-icon" style="background: #0088cc;">T</div>
-                <div class="info"><div class="name">Toncoin</div><div class="sub" id="ton-amt">0 TON</div></div>
-                <div class="val">$0.00</div>
+                <div class="coin-icon" style="background: #f3ba2f;">G</div>
+                <div class="info"><div class="name">$GEGHT</div><div class="sub" id="geght-amt">0.00</div></div>
+                <div class="val">$<span id="geght-usd">0.00</span></div>
             </div>
             <div class="list-item">
-                <div class="coin-icon" style="background: #f3ba2f;">G</div>
-                <div class="info"><div class="name">$GEGHT</div><div class="sub" id="geght-amt">500.00</div></div>
-                <div class="val">$60.00</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="checks-p" class="page">
-        <div class="header"><h3>Чеки</h3><p style="color:var(--grey)">Создавайте и активируйте чеки</p></div>
-        
-        <div class="list-card">
-            <div style="padding: 20px;">
-                <input type="text" id="check-code" placeholder="Код чека"><button class="btn-main" style="width: 100%; max-width: none;" onclick="claimCheck()">Активировать</button>
-            </div>
-        </div>
-
-        <div class="section-title">Действия</div>
-        <div class="list-card">
-            <div class="list-item" onclick="createCheck()">
-                <div class="info"><div class="name" style="color: var(--blue);">Создать новый чек</div></div>
+                <div class="coin-icon" style="background: #0088cc;">T</div>
+                <div class="info"><div class="name">Toncoin</div><div class="sub">0.00 TON</div></div>
+                <div class="val">$0.00</div>
             </div>
         </div>
     </div>
 
     <div class="nav">
-        <div class="nav-item active" id="n-wallet" onclick="go('wallet')">КОШЕЛЕК</div>
-        <div class="nav-item" id="n-checks" onclick="go('checks')">ЧЕКИ</div>
-        <div class="nav-item">P2P</div>
+        <div class="nav-item active">КОШЕЛЕК</div>
+        <div class="nav-item" onclick="tg.showAlert('Скоро...')">ИСТОРИЯ</div>
+        <div class="nav-item" onclick="tg.showAlert('Скоро...')">НАСТРОЙКИ</div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
 
-        let bal = parseFloat(localStorage.getItem('w_bal')) || 500.00;
-        
+        let bal = parseFloat(localStorage.getItem('wallet_v2_bal')) || 1000.00;const BOT_USERNAME = "Tetgers_Gag_bot"; // ЗАМІНИ НА СВОГО БОТА (БЕЗ @)
+
         function upd() {
             document.getElementById('geght-amt').innerText = bal.toFixed(2);
-            document.getElementById('usd-bal').innerText = (bal * 0.12).toFixed(2);
-            localStorage.setItem('w_bal', bal);
+            document.getElementById('geght-usd').innerText = (bal * 0.15).toFixed(2);
+            document.getElementById('usd-bal').innerText = (bal * 0.15).toFixed(2);
+            localStorage.setItem('wallet_v2_bal', bal);
         }
 
-        function go(p) {
-            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-            document.getElementById(p + '-p').classList.add('active');
-            document.getElementById('n-' + p).classList.add('active');
+        // Автоматична активація через посилання
+        function checkStartParam() {
+            const params = new URLSearchParams(window.location.search);
+            const startParam = params.get('tgWebAppStartParam'); // Отримуємо код з посилання
+
+            if (startParam && startParam.startsWith('C_')) {
+                const amount = 500; // Умовна сума чека
+                bal += amount;
+                upd();
+                tg.showAlert(✅ Чек активирован!\nВы получили ${amount} $GEGHT);
+                
+                // Очищуємо параметри в URL, щоб не активувати двічі при релоаді
+                window.history.replaceState({}, '', window.location.pathname);
+            }
         }
 
-        function createCheck() {
-            let amount = prompt("Введите сумму чека ($GEGHT):");
+        window.createCheck = () => {
+            const amount = prompt("Сумма чека ($GEGHT):");
             if (amount && bal >= amount) {
                 bal -= amount;
-                let code = "GEGHT-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+                const checkId = "C_" + Math.random().toString(36).substr(2, 7).toUpperCase();
+                const shareLink = https://t.me/${BOT_USERNAME}?start=${checkId}; // Пряме посилання
+                
                 upd();
-                tg.showAlert("Чек создан!\nКод: " + code + "\nОтправьте этот код другу.");
+                tg.showPopup({
+                    title: 'Чек создан',
+                    message: Сумма: ${amount} $GEGHT\nСсылка: ${shareLink},
+                    buttons: [{type: 'default', text: 'Копировать ссылку', id: 'copy'}]
+                }, (buttonId) => {
+                    if (buttonId === 'copy') {
+                        const el = document.createElement('textarea');
+                        el.value = shareLink;
+                        document.body.appendChild(el);
+                        el.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(el);
+                        tg.showAlert("Ссылка скопирована!");
+                    }
+                });
             } else {
                 tg.showAlert("Недостаточно средств");
             }
-        }
+        };
 
-        function claimCheck() {
-            let code = document.getElementById('check-code').value;
-            if (code.startsWith("GEGHT-")) {
-                bal += 100; // Імітація: будь-який код дає 100 для тесту
-                document.getElementById('check-code').value = "";
-                upd();
-                tg.showAlert("Чек активирован! +100 $GEGHT");
-                go('wallet');
-            } else {
-                tg.showAlert("Неверный код чека");
-            }
-        }
-
+        checkStartParam();
         upd();
     </script>
 </body>
